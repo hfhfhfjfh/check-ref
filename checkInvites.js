@@ -12,7 +12,7 @@ if (!admin.apps.length) {
 }
 
 const db = admin.database();
-const targetUid = "8XE8XOQm6qOuDSdIFlp6gd4bpSJ2";
+const targetUid = "UHzfnKVGA2c0wBuQ8YXutELAsu13"; // Updated target UID
 
 async function getUserInvites(uid) {
   try {
@@ -34,7 +34,7 @@ async function getUserInvites(uid) {
 
       // Group by date
       const grouped = {};
-      invites.forEach(invite => {
+      for (const invite of invites) {
         const dateObj = new Date(Number(invite.timestamp));
         const dateKey = dateObj.toLocaleDateString("en-GB", {
           day: "2-digit",
@@ -55,17 +55,26 @@ async function getUserInvites(uid) {
           uid: invite.inviteUid,
           time: timeFormatted
         });
-      });
+      }
 
-      // Print results
-      console.log(`✅ Invites for user: ${uid}\n`);
-      Object.entries(grouped).forEach(([date, list]) => {
+      // Fetch emails for each invite UID
+      for (const [date, list] of Object.entries(grouped)) {
         console.log(`📅 ${date}`);
-        list.forEach(item => {
-          console.log(`   ⏰ ${item.time} → UID: ${item.uid}`);
-        });
+        for (const item of list) {
+          const userRef = db.ref(`users/${item.uid}`);
+          const userSnapshot = await userRef.once("value");
+
+          if (userSnapshot.exists()) {
+            const inviterData = userSnapshot.val();
+            const inviterEmail = inviterData.email || "Email not available"; // Assuming email is stored under the user's node
+
+            console.log(`   ⏰ ${item.time} → UID: ${item.uid}, Email: ${inviterEmail}`);
+          } else {
+            console.log(`   ⏰ ${item.time} → UID: ${item.uid}, Email: Data not found`);
+          }
+        }
         console.log("-------------------------");
-      });
+      }
     } else {
       console.log(`⚠️ No invites found for user ${uid}`);
     }

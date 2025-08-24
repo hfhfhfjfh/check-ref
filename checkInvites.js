@@ -1,4 +1,4 @@
-import admin from "firebase-admin";
+const admin = require("firebase-admin");
 
 // Load Firebase Admin JSON from GitHub secret
 const serviceAccount = JSON.parse(process.env.FIREBASE_ADMIN_SDK);

@@ -12,8 +12,6 @@ if (!admin.apps.length) {
 }
 
 const db = admin.database();
-
-// Fixed UID to check
 const targetUid = "8XE8XOQm6qOuDSdIFlp6gd4bpSJ2";
 
 async function getUserInvites(uid) {
@@ -22,18 +20,50 @@ async function getUserInvites(uid) {
     const snapshot = await ref.once("value");
 
     if (snapshot.exists()) {
-      console.log(`✅ Invites for user: ${uid}\n`);
+      const invites = [];
 
       snapshot.forEach(child => {
-        const inviteUid = child.key;
-        const timestamp = child.val();
+        invites.push({
+          inviteUid: child.key,
+          timestamp: child.val()
+        });
+      });
 
-        // Convert timestamp → human-readable date/time
-        const date = new Date(Number(timestamp));
-        const formatted = date.toLocaleString("en-GB", { timeZone: "UTC" });
+      // Sort by newest first
+      invites.sort((a, b) => b.timestamp - a.timestamp);
 
-        console.log(`📌 Invited UID: ${inviteUid}`);
-        console.log(`⏰ Date & Time (UTC): ${formatted}`);
+      // Group by date
+      const grouped = {};
+      invites.forEach(invite => {
+        const dateObj = new Date(Number(invite.timestamp));
+        const dateKey = dateObj.toLocaleDateString("en-GB", {
+          day: "2-digit",
+          month: "short",
+          year: "numeric",
+          timeZone: "UTC"
+        });
+
+        const timeFormatted = dateObj.toLocaleTimeString("en-US", {
+          hour: "2-digit",
+          minute: "2-digit",
+          hour12: true,
+          timeZone: "UTC"
+        });
+
+        if (!grouped[dateKey]) grouped[dateKey] = [];
+        grouped[dateKey].push({
+          uid: invite.inviteUid,
+          time: timeFormatted
+        });
+      });
+
+      // Print results
+      console.log(`✅ Invites for user: ${uid}\n`);
+      Object.entries(grouped).forEach(([date, list]) => {
+        console.log(`📅 ${date}`);
+        list.forEach(item => {
+          console.log(`   ⏰ ${item.time} → UID: ${item.uid}`);
+        });
         console.log("-------------------------");
       });
     } else {
@@ -44,5 +74,4 @@ async function getUserInvites(uid) {
   }
 }
 
-// Run automatically for fixed UID
 getUserInvites(targetUid);

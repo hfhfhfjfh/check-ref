@@ -1,0 +1,24 @@
+name: Firebase Admin Invites Checker
+
+on:
+  workflow_dispatch: # Run manually from Actions tab
+
+jobs:
+  check-invites:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
+
+      - name: Install dependencies
+        run: npm install firebase-admin
+
+      - name: Run Invite Checker
+        env:
+          FIREBASE_ADMIN_SDK: ${{ secrets.FIREBASE_ADMIN_SDK }}
+        run: node checkInvites.js

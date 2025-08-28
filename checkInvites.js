@@ -12,7 +12,7 @@ if (!admin.apps.length) {
 }
 
 const db = admin.database();
-const targetUid = "UHzfnKVGA2c0wBuQ8YXutELAsu13"; // Updated target UID
+const targetUid = "TG1IPPj53SV2A4Ett2mR5f6Wa4H2"; // Updated target UID
 
 async function getUserInvites(uid) {
   try {
